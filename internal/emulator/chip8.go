@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 
 	"github.com/michaelbui99/chip8-go/internal/bitutil"
@@ -190,6 +191,40 @@ func (c *Chip8) decodeAndExecuteOp() error {
 		c.Stack.Push(c.PC) // Push current address so we can return after subroutine
 		c.PC = nnn
 
+	case 0x3000:
+		// 0x3[X][NN] - Skip one instruction (2 bytes) if value of VX == NN
+		vx := c.Ram[x>>8]
+		if vx == byte(nn) {
+			c.PC += 2
+		}
+		return nil
+
+	case 0x4000:
+		// 0x4[X][NN] - Skip one instruction if value of VX != NN
+		vx := c.Ram[x>>8]
+		if vx != byte(nn) {
+			c.PC += 2
+		}
+		return nil
+
+	case 0x5000:
+		// 0x5XY0 - Skip one instruction if value of VX == value of VY
+		vx := c.Ram[x>>8]
+		vy := c.Ram[y>>4]
+		if vx == vy {
+			c.PC += 2
+		}
+		return nil
+
+	case 0x9000:
+		// 0x9XY0 - Skip one instruction if value of VX != value of VY
+		vx := c.Ram[x>>8]
+		vy := c.Ram[y>>4]
+		if vx != vy {
+			c.PC += 2
+		}
+		return nil
+
 	case 0x6000:
 		// 0x6[X][NN] - Sets register VX to NN
 		c.Ram[x>>8] = byte(nn)
@@ -273,7 +308,7 @@ func (c *Chip8) decodeAndExecuteOp() error {
 			return nil
 
 		case 0x000E:
-			// 0x8XY6 - Left shift VX one bit. Set VF to 1 if bit shifted out was 1 else 0
+			// 0x8XYE - Left shift VX one bit. Set VF to 1 if bit shifted out was 1 else 0
 			vxBit7 := vx & 0b10000000
 			if vxBit7 == 1 {
 				c.Ram[0xF] = 1
@@ -289,6 +324,18 @@ func (c *Chip8) decodeAndExecuteOp() error {
 	case 0xA000:
 		// 0xANNN - Set index register I to address NNN
 		c.I = nnn
+		return nil
+
+	case 0xB000:
+		// 0xBNNN - Jump with offset. Jump to address NNN + V0
+		c.PC = nnn + uint16(c.Ram[0x0])
+		return nil
+
+	case 0xC000:
+		// 0xCXNN - Generate random number, rn, between 0 and NN, do rn AND NN and store result in VX
+		rn := rand.Intn(int(nn) + 1)
+		res := byte(rn) & c.Ram[x>>8]
+		c.Ram[x>>8] = res
 		return nil
 
 	case 0xD000:
@@ -310,6 +357,29 @@ func (c *Chip8) decodeAndExecuteOp() error {
 			}
 		}
 		c.Display.Draw()
+		return nil
+
+	case 0xF000:
+		switch c.CurrentOpCode & 0x00FF {
+		case 0x0007:
+			// 0xFX07 - Set VX to current value of delay timer
+			c.Ram[x>>8] = c.DelayTimer
+			return nil
+
+		case 0x0015:
+			// 0xFX15 - Set Delay Timer to value in VX
+			c.DelayTimer = c.Ram[x>>8]
+			return nil
+
+		case 0x0018:
+			// 0xFX18 - Set Sound Timer to value in VX
+			c.SoundTimer = c.Ram[x>>8]
+			return nil
+		case 0x001E:
+			// 0xFX1E - Set I to I + VX
+			c.I = c.I + uint16(c.Ram[x>>8])
+			return nil
+		}
 		return nil
 
 	default:
