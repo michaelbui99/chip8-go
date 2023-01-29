@@ -64,6 +64,23 @@ func NewChip8() *Chip8 {
 		Display:       display.NewDisplay(10),
 		RomLoaded:     false,
 		RefreshRateMs: 60,
+		Keys: map[byte]bool{
+			0x1: false,
+			0x2: false,
+			0x3: false,
+			0x4: false,
+			0x5: false,
+			0x6: false,
+			0x7: false,
+			0x8: false,
+			0x9: false,
+			0xA: false,
+			0xB: false,
+			0xC: false,
+			0xD: false,
+			0xE: false,
+			0xF: false,
+		},
 	}
 
 	copy(chip8.Ram[0:len(fontSet)], fontSet)
