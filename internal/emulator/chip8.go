@@ -259,6 +259,30 @@ func (c *Chip8) decodeAndExecuteOp() error {
 
 			c.Ram[x>>8] = vy - vx
 			return nil
+
+		case 0x0006:
+			// 0x8XY6 - Right shift VX one bit. Set VF to 1 if bit shifted out was 1 else 0
+			vxBit0 := vx & 0x1
+			if vxBit0 == 1 {
+				c.Ram[0xF] = 1
+			} else {
+				c.Ram[0xF] = 0
+			}
+
+			c.Ram[x>>8] = vx >> 1
+			return nil
+
+		case 0x000E:
+			// 0x8XY6 - Left shift VX one bit. Set VF to 1 if bit shifted out was 1 else 0
+			vxBit7 := vx & 0b10000000
+			if vxBit7 == 1 {
+				c.Ram[0xF] = 1
+			} else {
+				c.Ram[0xF] = 0
+			}
+
+			c.Ram[x>>8] = vx << 1
+			return nil
 		}
 		return nil
 
