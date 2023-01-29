@@ -169,6 +169,14 @@ func (c *Chip8) decodeAndExecuteOp() error {
 			// 0x00E0 - Clear screen
 			c.Display.Clear()
 			return nil
+
+		case 0x00EE:
+			// 0x00EE return from subroutine
+			retAddr, err := c.Stack.Pop()
+			if err != nil {
+				return err
+			}
+			c.PC = retAddr
 		}
 		return nil
 
@@ -176,6 +184,11 @@ func (c *Chip8) decodeAndExecuteOp() error {
 		// 0x1NNN - Jump to address NNN
 		c.PC = nnn
 		return nil
+
+	case 0x2000:
+		// 0x2NNN - Call subroutine at memory location NNN
+		c.Stack.Push(c.PC) // Push current address so we can return after subroutine
+		c.PC = nnn
 
 	case 0x6000:
 		// 0x6[X][NN] - Sets register VX to NN
@@ -185,6 +198,68 @@ func (c *Chip8) decodeAndExecuteOp() error {
 	case 0x7000:
 		// 0x7[X][NN] - Add value NN to register VX
 		c.Ram[x>>8] = c.Ram[x>>8] + byte(nn)
+		return nil
+
+	case 0x8000:
+		// 0x8XY* - Logical arithemetic instructions. The specific operations i determined by the last 4 bits
+		vx := c.Ram[x>>8]
+		vy := c.Ram[y>>4]
+		switch c.CurrentOpCode & 0x000F {
+		case 0x0000:
+			// 0x8XY0 - Set VX to value of VY
+			c.Ram[x>>8] = vy
+			return nil
+
+		case 0x0001:
+			// 0x8XY1 - set VX to VX OR VY
+			c.Ram[x>>8] = vx | vy
+			return nil
+
+		case 0x0002:
+			// 0x8XY2 - Set VX to VX AND VY
+			c.Ram[x>>8] = vx & vy
+			return nil
+
+		case 0x0003:
+			// 0x8XY3 - Set VX to VX XOR VY
+			c.Ram[x>>8] = (vx | vy) & ^(vx & vy)
+			return nil
+
+		case 0x0004:
+			// 0x8XY4 - Set VX to VX ADD VY. Set VF to 1 if carry else 0
+			res := vx + vy
+
+			if res > 0xFF {
+				c.Ram[0xF] = 1
+			} else {
+				c.Ram[0xF] = 0
+			}
+
+			c.Ram[x>>8] = res
+			return nil
+
+		case 0x0005:
+			// 0x8XY5 - Set VX to VX SUBTRACT VY. Set VF to 0 if underflow else 1
+			if vx >= vy {
+				c.Ram[0xF] = 1
+			} else {
+				c.Ram[0xF] = 0
+			}
+
+			c.Ram[x>>8] = vx - vy
+			return nil
+
+		case 0x0007:
+			// 0x8XY5 - Set VX to VY SUBTRACT VX. Set VF to 0 if underflow else 1
+			if vy >= vx {
+				c.Ram[0xF] = 1
+			} else {
+				c.Ram[0xF] = 0
+			}
+
+			c.Ram[x>>8] = vy - vx
+			return nil
+		}
 		return nil
 
 	case 0xA000:
