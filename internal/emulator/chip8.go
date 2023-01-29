@@ -46,6 +46,7 @@ type Chip8 struct {
 	DelayTimer    byte                // Should be decremented by one 60 times per second
 	SoundTimer    byte                // Should be decremented by one 60 times per second
 	CurrentOpCode uint16              // Current instruction to execute
+	Keys          map[byte]bool       // 16 keys from 1 to F. Keeps track which buttons are being pressed
 	Display       *display.Display
 	RomLoaded     bool
 	RefreshRateMs uint32
@@ -80,10 +81,19 @@ func (c *Chip8) Start() error {
 	for !finished {
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
+			switch e := event.(type) {
 			case *sdl.QuitEvent:
 				println("Quit")
 				finished = true
+
+			case *sdl.KeyboardEvent:
+				key := GetChip8Key(string(e.Keysym.Sym))
+				switch e.Type {
+				case sdl.KEYDOWN:
+					c.PressKey(key)
+				case sdl.KEYUP:
+					c.LiftKey(key)
+				}
 			}
 		}
 
@@ -150,6 +160,14 @@ func (c *Chip8) Load(file string) error {
 
 func (c *Chip8) SetDisplaySizeFactor(sizeFactor int32) {
 	c.Display = display.NewDisplay(sizeFactor)
+}
+
+func (c *Chip8) PressKey(key byte) {
+	c.Keys[key] = true
+}
+
+func (c *Chip8) LiftKey(key byte) {
+	c.Keys[key] = false
 }
 
 // Fetches the next instruction and increments program counter by 2.
@@ -383,9 +401,49 @@ func (c *Chip8) decodeAndExecuteOp() error {
 			// 0xFX18 - Set Sound Timer to value in VX
 			c.SoundTimer = c.Ram[x>>8]
 			return nil
+
 		case 0x001E:
 			// 0xFX1E - Set I to I + VX
 			c.I = c.I + uint16(c.Ram[x>>8])
+			return nil
+
+		case 0x000A:
+			// 0xFX0A - Get Key. Block execution until a key is being pressed. On key press, store key being pressed in VX
+			var keyPressed bool
+			var key byte
+			for k, v := range c.Keys {
+				if v {
+					keyPressed = true
+					key = k
+					break
+				}
+			}
+
+			if !keyPressed {
+				// We "block" execution by simply decrementing PC by one instruction such that we reach this instruction again
+				c.PC -= 2
+				return nil
+			}
+
+			c.Ram[x>>8] = key
+		}
+		return nil
+
+	case 0xE000:
+		keyPressed := c.Keys[c.Ram[x>>8]]
+		switch c.CurrentOpCode & 0x00FF {
+		case 0x009E:
+			// 0xEX9E - Skip one instruction if key corresponding to the value in VX is being pressed.
+			if keyPressed {
+				c.PC += 2
+			}
+			return nil
+
+		case 0x00A1:
+			// 0xEXA1 - Skip one instruction if key corresponding to the value in VX is not being pressed.
+			if !keyPressed {
+				c.PC += 2
+			}
 			return nil
 		}
 		return nil
