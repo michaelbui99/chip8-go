@@ -22,3 +22,9 @@ scripts:
     actions:
       - shell: shuttle run build
       - shell: shuttle run run command=load flags=--sizefactor=10 args=./roms/IBM_Logo.ch8
+
+  test_rom:
+    description: Runs the Chip-8 opcode test ROM. Emulator is complete when all tests passes.
+    actions:
+      - shell: shuttle run build
+      - shell: shuttle run run command=load args=./test/test_opcode.ch8

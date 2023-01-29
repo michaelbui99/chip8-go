@@ -47,5 +47,5 @@ func (stack *Stack) Size() int {
 }
 
 func (stack *Stack) Empty() bool {
-	return stack.Size() > 0
+	return stack.Size() == 0
 }
