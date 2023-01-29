@@ -3,7 +3,7 @@
 <img src="./doc/emulator_running_ibm_logo_program.png">
 
 Chip-8 emulator written in Go.<br>
-Goal was to get more comfortable with Go and learning the basics of emulation.
+The goal was to get more comfortable with Go and learning the basics of emulation.
 
 Still in development, currently only supports enough instructions to run the IBM Logo program.
 
@@ -27,6 +27,6 @@ $ chip-8 -h
 
 # References
 
-## High level overview over components that needs to be implemented + specifications
+## High level overview over components + specifications
 
 -   https://tobiasvl.github.io/blog/write-a-chip-8-emulator/
