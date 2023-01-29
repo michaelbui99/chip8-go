@@ -7,13 +7,18 @@ The goal was to get more comfortable with Go and learning the basics of emulatio
 
 Still in development, currently only supports enough instructions to run the IBM Logo program.
 
-# Install
+# Requirements
+
+-   SDL2
+-   Go (for installing the emulator)
+
+# Installation
 
 ```console
 $ go install github.com/michaelbui99/chip8-go@latest
 ```
 
-# Running a Chip-8 ROM
+# Load and run a Chip-8 ROM
 
 ```console
 $ chip8-go load /PATH/TO/ROM
