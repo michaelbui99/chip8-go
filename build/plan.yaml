@@ -1,11 +1,11 @@
 scripts:
   build:
-    description: Builds executable
+    description: Build executable
     actions:
       - shell: go build -o ./out/chip8-go ./main.go
 
   run:
-    description: Runs the chip 8
+    description: Build and run the chip-8
     args:
       - name: command
         required: true
@@ -15,7 +15,7 @@ scripts:
         required: false
     actions:
       - shell: shuttle run build
-      - shell: go run ./main.go $command $args
+      - shell: ./out/chip8-go $command $flags $args
 
   ibm:
     description: Runs the IBM Logo ROM. Useful for testing if FDE cycle works correctly

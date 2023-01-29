@@ -52,13 +52,14 @@ func (d *Display) Clear() {
 	}
 }
 
-func (d *Display) Draw(screenState [Height][Width]byte) {
+func (d *Display) Draw() {
+	screenState := d.Instance
 	// Clear window
 	d.Renderer.SetDrawColor(0, 0, 0, 0)
 	d.Renderer.Clear()
 
 	// Draw screen
-	for i, row := range d.Instance {
+	for i, row := range screenState {
 		for j := range row {
 			pixelOn := screenState[i][j] != 0
 			if pixelOn {

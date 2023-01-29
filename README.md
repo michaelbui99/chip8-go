@@ -22,7 +22,7 @@ $ chip8-go load /PATH/TO/ROM
 # See all available commands
 
 ```console
-$ chip-8 -h
+$ chip8-go -h
 ```
 
 # References

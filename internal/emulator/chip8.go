@@ -87,7 +87,7 @@ func (c *Chip8) Start() error {
 		}
 
 		err := c.EmulateCycle()
-		c.Display.Draw(c.Display.Instance)
+		c.Display.Draw()
 		if err != nil {
 			return err
 		}
@@ -210,7 +210,7 @@ func (c *Chip8) decodeAndExecuteOp() error {
 				}
 			}
 		}
-		c.Display.Draw(c.Display.Instance)
+		c.Display.Draw()
 		return nil
 
 	default:
