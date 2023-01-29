@@ -106,6 +106,14 @@ func (c *Chip8) EmulateCycle() error {
 		return err
 	}
 
+	if c.DelayTimer > 0 {
+		c.DelayTimer--
+	}
+
+	if c.SoundTimer > 0 {
+		c.SoundTimer--
+	}
+
 	return nil
 }
 
