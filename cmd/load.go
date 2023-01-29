@@ -14,15 +14,15 @@ import (
 // loadCmd represents the load command
 var romPath string
 
-// var sizeFactor int32 = 10
+var sizeFactor int32 = 10
 var loadCmd = &cobra.Command{
-	Use:   "load",
-	Short: "Load Chip-8 ROM",
-	Long:  `Load Chip-8 ROM`,
+	Use:   "load [path to rom]",
+	Short: "Load Chip-8 ROM and start Chip-8",
+	Long:  `Load Chip-8 ROM and start Chip-8. The ROM must not exceed 4kB`,
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		chip8 := provider.GetChip8Instance()
-		// chip8.SetDisplaySizeFactor(sizeFactor)
+		chip8.SetDisplaySizeFactor(sizeFactor)
 		romPath = args[0]
 		fmt.Printf("ROM PATH: %v\n", romPath)
 
@@ -41,7 +41,7 @@ var loadCmd = &cobra.Command{
 }
 
 func init() {
-	// loadCmd.Flags().Int32Var(&sizeFactor, "sizefactor", 10, "Increase display size of some factor. Original size (size factor 1) of Chip-8 display is 32x64")
+	loadCmd.Flags().Int32Var(&sizeFactor, "sizefactor", 10, "Increase display size of some factor. Original size (size factor 1) of Chip-8 display is 32x64")
 	rootCmd.AddCommand(loadCmd)
 	// Here you will define your flags and configuration settings.
 

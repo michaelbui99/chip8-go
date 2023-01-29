@@ -291,6 +291,8 @@ func (c *Chip8) decodeAndExecuteOp() error {
 	default:
 		return fmt.Errorf("UKNOWN INSTRUCTION: %X PC: %v\n%v", opcodeMasked, c.PC, hex.Dump(c.Ram[:]))
 	}
+
+	return nil
 }
 
 func (c *Chip8) delay(ms uint32) {
