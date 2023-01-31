@@ -5,7 +5,9 @@
 Chip-8 emulator written in Go.<br>
 The goal was to get more comfortable with Go and learning the basics of emulation.
 
-Still in development, currently only supports enough instructions to run the IBM Logo program.
+Still in development, a few instructions are still missing as seen on the test rom below. 
+
+<img src="./doc/test_rom_result.png">
 
 # Requirements
 
